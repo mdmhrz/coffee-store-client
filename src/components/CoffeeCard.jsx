@@ -1,9 +1,10 @@
 import React from 'react';
 import { FaEdit, FaEye } from 'react-icons/fa';
 import { MdDelete, MdEdit } from 'react-icons/md';
+import { Link } from 'react-router';
 import Swal from 'sweetalert2';
 
-const CoffeeCard = ({ coffee }) => {
+const CoffeeCard = ({ coffee, coffees, setCoffees }) => {
 
     const { _id, name, price, quantity, photo } = coffee;
 
@@ -19,15 +20,25 @@ const CoffeeCard = ({ coffee }) => {
             confirmButtonText: "Yes, delete it!"
         }).then((result) => {
             if (result.isConfirmed) {
-                Swal.fire({
+                // Start Deleting the coffee form DB
+                fetch(`http://localhost:3000/coffees/${_id}`, {
+                    method: 'DELETE'
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log('after delete', data);
+                        if (data.deletedCount) {
+                            Swal.fire({
+                                title: "Deleted!",
+                                text: "Your Coffee has been deleted.",
+                                icon: "success"
+                            });
 
-
-
-
-                    // title: "Deleted!",
-                    // text: "Your file has been deleted.",
-                    // icon: "success"
-                });
+                            // remove the current coffee form state
+                            const remainingCoffee = coffees.filter(c => c._id !== _id);
+                            setCoffees(remainingCoffee)
+                        }
+                    })
             }
         });
     }
@@ -47,8 +58,17 @@ const CoffeeCard = ({ coffee }) => {
                 </div>
                 <div className="card-actions">
                     <div className="join join-vertical space-y-3">
-                        <button className="btn join-item bg-yellow-600"><FaEye className='text-white' /></button>
-                        <button className="btn join-item bg-white text-black"><MdEdit className='text-lg' /></button>
+
+                        <Link to={`/coffee/${_id}`}>
+                            <button className="btn join-item bg-yellow-600"><FaEye className='text-white text-lg' /></button>
+                        </Link>
+
+
+                        <Link to={`/updateCoffee/${_id}`}>
+                            <button className="btn join-item bg-white text-black"><MdEdit className='text-lg' /></button>
+                        </Link>
+
+
                         <button onClick={() => handleDelete(_id)} className="btn join-item bg-red-700"><MdDelete className='text-lg' /></button>
                     </div>
                 </div>
