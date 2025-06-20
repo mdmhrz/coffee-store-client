@@ -13,14 +13,23 @@ const SignUp = () => {
         const form = e.target;
         const formData = new FormData(form);
 
-        const { email, password, ...userProfile } = Object.fromEntries(formData)
+        const { email, password, ...restFormData } = Object.fromEntries(formData.entries());
 
 
 
-        console.log(email, password, userProfile);
+        // console.log(email, password, userProfile);
         // Create user in the firebase
-        createUser(email, password).then(res => {
-            console.log(res.user);
+        createUser(email, password).then(result => {
+            console.log(result.user);
+
+            const userProfile = {
+                email,
+                ...restFormData,
+                creationTime: result.user?.metadata?.creationTime,
+                lasSignInTime: result.user?.metadata?.lastSignInTime,
+            }
+
+
 
             // Save profile infor in the database
             fetch('http://localhost:3000/users', {
@@ -28,9 +37,10 @@ const SignUp = () => {
                 headers: {
                     'Content-type': 'application/json'
                 },
-                bdoy: JSON.stringify(userProfile)
+                body: JSON.stringify(userProfile)
             }).then(res => res.json()).then(data => {
                 if (data.insertedId) {
+                    console.log(data);
                     Swal.fire({
                         title: "User profile created successfully",
                         icon: "success",
